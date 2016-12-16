@@ -1,0 +1,12 @@
+importFrom(MASS, kde2d)
+import(methods)
+
+importFrom("grDevices", "chull", "contourLines", "dev.off")
+importFrom("graphics", "arrows", "axis", "mtext", "par", "plot",
+           "points", "polygon")
+importFrom("stats", "approx", "density", "dist")
+
+export(bivrp, plot.bivrp, add.dplots.plot, add.dplots.prep, chp.perpoint, get.k, get.newpolygon,
+       is.point.inside, polygon.area, sorttheta)
+
+S3method(plot, bivrp)

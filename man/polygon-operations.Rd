@@ -1,0 +1,58 @@
+\name{polygon-operations}
+\alias{polygon.area}
+\alias{get.k}
+\alias{get.newpolygon}
+\encoding{UTF-8}
+\title{Polygon operations}
+\description{Convex polygon operations - determination of area, centre of mass, and area reduction}
+\usage{
+polygon.area(P)
+get.k(P, conf)
+get.newpolygon(k, P)
+}
+\arguments{
+  \item{P}{2-column \code{matrix} or \code{data.frame} with the coordinates of the vertices of the convex polygon}
+  \item{conf}{proportion of the area of polygon \code{P}}
+  \item{k}{distance from the centre of mass to the vertices to be reduced so that new polygon has proportion \code{conf} of the area of polygon \code{P}}
+}
+
+\author{
+Rafael A. Moral <rafael_moral@yahoo.com.br>, John Hinde and Clarice G. B. \enc{Demétrio}{Demetrio}
+}
+
+\seealso{
+\code{\link{is.point.inside}}
+\code{\link{polygon}}
+}
+\examples{
+  oldPolygon <- data.frame(x=c(2,1,3,4.5,5), y=c(1,3,5,4.5,2))
+  
+  # area
+  polygon.area(oldPolygon)$area
+  # centre of mass
+  polygon.area(oldPolygon)$centre
+  
+  # get a new polygon with 50% of the area of the old one
+  k <- get.k(P=oldPolygon, conf=0.5)
+  newPolygon <- get.newpolygon(k=k, P=oldPolygon)
+  polygon.area(newPolygon)$area/polygon.area(oldPolygon)$area
+  
+  # illustration with conf=0.4
+  plot(oldPolygon, xlim=c(0,6), ylim=c(0,6), main="(a)", pch=16)
+  polygon(oldPolygon, lwd=2, col="#00000033")
+  text(oldPolygon, c(expression(P[1]), expression(P[2]),
+                     expression(P[3]), expression(P[4]),
+                     expression(P[5])), pos=c(1,2,3,4,4), cex=2)
+  polygon(newPolygon, border=4, lwd=2, col="#52A3E199")
+  points(newPolygon, pch=16, col=4)
+  text(newPolygon, c(expression(paste(P[1],minute)), expression(paste(P[2],minute)),
+             expression(paste(P[3],minute)), expression(paste(P[4],minute)),
+             expression(paste(P[5],minute))), pos=c(1,3,2,4,4), col=4, cex=2)
+
+  C <- polygon.area(oldPolygon)$centre
+  text(C[1], C[2], "C", pos=4, cex=2)
+  for(i in 1:5) lines(c(C[1], oldPolygon[i,1]), 
+                      c(C[2], oldPolygon[i,2]), lty=2, lwd=2, type="b")
+}
+
+\keyword{ polygon }
