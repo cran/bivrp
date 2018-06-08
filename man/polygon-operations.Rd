@@ -8,12 +8,13 @@
 \usage{
 polygon.area(P)
 get.k(P, conf)
-get.newpolygon(k, P)
+get.newpolygon(conf, P, method)
 }
 \arguments{
   \item{P}{2-column \code{matrix} or \code{data.frame} with the coordinates of the vertices of the convex polygon}
   \item{conf}{proportion of the area of polygon \code{P}}
   \item{k}{distance from the centre of mass to the vertices to be reduced so that new polygon has proportion \code{conf} of the area of polygon \code{P}}
+  \item{method}{method used to reduce the area of the polygon. Use \code{method = "proportional"} to scale the distances between the centroid and the vertices by \code{sqrt(conf)}; use \code{method = "get.k"} to subtract the same distance \code{k} from the centroid to each vertex.}
 }
 
 \author{
@@ -33,11 +34,14 @@ Rafael A. Moral <rafael_moral@yahoo.com.br>, John Hinde and Clarice G. B. \enc{D
   polygon.area(oldPolygon)$centre
   
   # get a new polygon with 50% of the area of the old one
-  k <- get.k(P=oldPolygon, conf=0.5)
-  newPolygon <- get.newpolygon(k=k, P=oldPolygon)
+  newPolygon <- get.newpolygon(conf=.5, P=oldPolygon, method="proportional")
   polygon.area(newPolygon)$area/polygon.area(oldPolygon)$area
   
-  # illustration with conf=0.4
+  # second method
+  newPolygon2 <- get.newpolygon(conf=.5, P=oldPolygon, method="get.k")
+  polygon.area(newPolygon2)$area/polygon.area(oldPolygon)$area
+  
+  # illustration
   plot(oldPolygon, xlim=c(0,6), ylim=c(0,6), main="(a)", pch=16)
   polygon(oldPolygon, lwd=2, col="#00000033")
   text(oldPolygon, c(expression(P[1]), expression(P[2]),

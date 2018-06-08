@@ -9,8 +9,8 @@ description
 \usage{
 bivrp(obj, sim = 99, conf = 0.95, diagfun, simfun, fitfun, 
       verb = F, add.dplots = T, theta.sort = T, add.polygon = F, 
-      reduce.polygon = T, kernel = F, chp = F, superpose.points = F, 
-      one.dim = F, xlab, ylab, main, clear.device = F, ...)
+      reduce.polygon = "proportional", kernel = F, chp = F, superpose.points = F, 
+      one.dim = F, xlab, ylab, main, clear.device = F, point.col, point.pch, ...)
 }
 
 \arguments{
@@ -24,15 +24,17 @@ bivrp(obj, sim = 99, conf = 0.95, diagfun, simfun, fitfun,
   \item{add.dplots}{logical. If \code{TRUE}, adds the marginal density plots}
   \item{theta.sort}{logical. If \code{TRUE}, produces a simulated polygon for each point}
   \item{add.polygon}{logical. If \code{TRUE}, plots the simulated polygons as well}
-  \item{reduce.polygon}{logical. If \code{TRUE}, reduces the polygon area using the algorithm in \code{get.k} and \code{get.newpolygon}. If \code{FALSE}, performs convex hull peeling to reduce the area}
+  \item{reduce.polygon}{method used to reduce the polygon area. Defaults to \code{proportional}, see \code{\link{get.newpolygon}} for details. If \code{reduce.polygon = "peel"}, performs convex hull peeling to reduce the area}
   \item{kernel}{logical. If TRUE, instead of using polygons for each point, computes 2d kernels and plots the contours}
   \item{chp}{logical. If \code{TRUE}, instead of using polygons for each point, performs convex hull peeling over all simulated points}
   \item{superpose.points}{only used if \code{kernel} or \code{chp} is TRUE. Logical argument, if \code{TRUE}, plots all simulated bivariate diagnostics}
-  \item{one.dim}{logical. If \code{TRUE}, plots only the marginal density plots}
+  \item{one.dim}{logical. If \code{TRUE}, plots only the marginal density plots (only works with \code{theta.sort = FALSE})}
   \item{xlab}{argument passed to \code{par}}
   \item{ylab}{argument passed to \code{par}}
   \item{main}{argument passed to \code{par}}
   \item{clear.device}{logical. If \code{TRUE}, clears the plotting device after producing the bivariate residual plot with simulation polygons}
+  \item{point.col}{a vector of length 2 with the colors of the points that are inside and outside of the simulated polygons}
+  \item{point.pch}{a vector of length 2 with the point characters of the points that are inside and outside of the simulated polygons}
   \item{\dots}{further arguments passed to \code{par}}
 }
 \details{
@@ -68,10 +70,11 @@ Rafael A. Moral <rafael_moral@yahoo.com.br>, John Hinde and Clarice G. B. \enc{D
 ## simulating a bivariate normal response variable
 
 require(mvtnorm)
-n <- 80
+
+n <- 40
 beta1 <- c(2, .4)
 beta2 <- c(.2, .2)
-x <- seq(1, 10, length=n)
+x <- seq(1, 10, length = n)
 X <- model.matrix(~ x)
 mu1 <- X\%*\%beta1
 mu2 <- X\%*\%beta2
@@ -88,34 +91,37 @@ set.seed(2016)
 Y <- as.numeric(rmvnorm(1, c(mu1, mu2), V))
 
 ## code for fitting the model estimating covariance or not
-loglik.bn <- function(theta, Y, X, covariance=TRUE) {
-  n <- length(Y)/2
-  beta1 <- theta[1:2]
-  beta2 <- theta[3:4]
-  sig1 <- exp(theta[5])
-  sig2 <- exp(theta[6])
-  if(covariance) sig12 <- theta[7] else sig12 <- 0
-  mu1 <- X\%*\%beta1
-  mu2 <- X\%*\%beta2
-  Sig1 <- diag(rep(sig1), n)
-  Sig2 <- diag(rep(sig2), n)
-  Sig12 <- diag(rep(sig12), n)
+bivnormfit <- function(Y, X, covariance) {
+  n <- nrow(X)
+  p <- ncol(X)
+  y <- cbind(Y[1:n],Y[(n+1):(2*n)])
+  XtXinv <- solve(crossprod(X, X))
+  beta.hat <- XtXinv \%*\% crossprod(X, y)
+  mu.hat <- X\%*\%beta.hat
+  sigma.hat <- 1/n * t(y - mu.hat) \%*\% (y - mu.hat)
+  if(!covariance) sigma.hat <- diag(diag(sigma.hat))
+  cov.betas <- sigma.hat \%x\% XtXinv
+  se.s1 <- sqrt(2*sigma.hat[1]^2/(n-p+1))
+  se.s2 <- sqrt(2*sigma.hat[4]^2/(n-p+1))
+  if(!covariance) se.s12 <- NA else {
+    rho <- sigma.hat[2]/sqrt(sigma.hat[1]*sigma.hat[4])
+    se.s12 <- sqrt((1+rho^2)*sigma.hat[1]*sigma.hat[4]/(n-p+1))
+  }
+  se.betas <- sqrt(diag(cov.betas))
+  se.sigma <- c(se.s1, se.s2, se.s12)
+  coefs <- c(beta.hat, sigma.hat[1], sigma.hat[4], sigma.hat[2])
+  names(coefs) <- c("beta1.0", "beta1.1", "beta2.0", "beta2.1", "sig1", "sig2", "sig12")
+  fitted <- c(mu.hat)
+  resid <- Y - fitted
+  Sig1 <- diag(rep(sigma.hat[1]), n)
+  Sig2 <- diag(rep(sigma.hat[4]), n)
+  Sig12 <- diag(rep(sigma.hat[2]), n)
   V <- rbind(cbind(Sig1, Sig12),
              cbind(Sig12, Sig2))
-  llik <- dmvnorm(Y, c(mu1, mu2), V, log=TRUE)
-  return(-llik)
-}
-
-bivnormfit <- function(Y, X, covariance, init) {
-  if(covariance) ni <- 7 else ni <- 6
-  if(missing(init)) init <- rep(0, ni)
-  fit <- optim(init, loglik.bn, Y=Y, X=X, covariance=covariance, method="BFGS")   
-  coefs <- fit$par
-  coefs[5:6] <- exp(coefs[5:6])
-  fitted <- c(X\%*\%coefs[1:2], X\%*\%coefs[3:4])
-  resid <- Y - fitted
-  ret <- list("coefs"=coefs, "covariance"=covariance, "n"=length(Y)/2, 
-              "X"=X, "fitted"=fitted, "resid"=resid, "loglik"=fit$value, "Y"=Y)
+  llik <- dmvnorm(Y, c(mu.hat), V, log = TRUE)
+  ret <- list("coefs" = coefs, "covariance" = covariance, "n" = n, 
+              "X" = X, "fitted" = fitted, "resid" = resid, "loglik" = llik,
+              "Y" = Y, "se" = c(se.betas, se.sigma))
   class(ret) <- "bivnormfit"
   return(ret)
 }
@@ -125,7 +131,7 @@ fit0 <- bivnormfit(Y, X, covariance=FALSE)
 fit1 <- bivnormfit(Y, X, covariance=TRUE)
 ## likelihood-ratio test
 2*(fit0$loglik - fit1$loglik)
-pchisq(43.33, 1, lower=FALSE)
+pchisq(54.24, 1, lower=FALSE)
 
 ## function for extracting diagnostics (raw residuals)
 dfun <- function(obj) {
@@ -146,12 +152,9 @@ sfun <- function(obj) {
   Sig12 <- diag(rep(sig12), n)
   V <- rbind(cbind(Sig1, Sig12),
              cbind(Sig12, Sig2))
-  beta1 <- obj$coefs[1:2]
-  beta2 <- obj$coefs[3:4]
-  mu1 <- obj$X\%*\%beta1
-  mu2 <- obj$X\%*\%beta2
   Y <- as.numeric(rmvnorm(1, c(mu1, mu2), V))
-  return(list(Y[1:n], Y[(n+1):(2*n)], "X"=obj$X, "covariance"=obj$covariance))
+  return(list(Y[1:n], Y[(n+1):(2*n)], "X" = obj$X, 
+              "covariance" = obj$covariance))
 }
 
 ## function for refitting the model to simulated data
@@ -160,23 +163,21 @@ ffun <- function(new.obj) {
   bivnormfit(Ynew, new.obj$X, new.obj$covariance)
 }
 
-\dontrun{
 ## Bivariate residual plot for model 1 (without estimating covariance)
-plot1 <- bivrp(fit0, diagfun=dfun, simfun=sfun, fitfun=ffun, verb=T)
+plot1 <- bivrp(fit0, diagfun=dfun, simfun=sfun, fitfun=ffun, verb=TRUE)
 ## without polygon area reduction
 plot(plot1, conf=1)
 ## drawing polygons
-plot(plot1, add.polygon=T)
+plot(plot1, add.polygon=TRUE)
 ## without ordering
-plot(plot1, theta.sort=F, kernel=T, add.dplots=T, superpose=T)
+plot(plot1, theta.sort=FALSE, kernel=TRUE, add.dplots=TRUE, superpose=TRUE)
 
 ## Bivariate residual plot for model 2 (estimating covariance)
-plot2 <- bivrp(fit1, diagfun=dfun, simfun=sfun, fitfun=ffun, verb=T)
+plot2 <- bivrp(fit1, diagfun=dfun, simfun=sfun, fitfun=ffun, verb=TRUE)
 ## without polygon area reduction
 plot(plot2, conf=1)
 ## drawing polygons
-plot(plot2, add.polygon=T, conf=1)
+plot(plot2, add.polygon=TRUE, conf=1)
 ## without ordering
-plot(plot2, theta.sort=F, kernel=T, add.dplots=T, superpose=T)
-}
+plot(plot2, theta.sort=FALSE, kernel=TRUE, add.dplots=TRUE, superpose=TRUE)
 }

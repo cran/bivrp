@@ -1,7 +1,7 @@
 plot.bivrp <-
 function(x, kernel, superpose.points, chp, add.dplots, 
          theta.sort, add.polygon, reduce.polygon, one.dim, 
-         pch=16, cex=.8, conf, xlab, ylab, main, ...) {
+         pch=16, cex=.8, conf, xlab, ylab, main, point.col, point.pch, ...) {
   
   obj <- x
   rm(x)
@@ -65,8 +65,12 @@ function(x, kernel, superpose.points, chp, add.dplots,
   }
   
   if(theta.sort) {
-    plot(0, 0, xlim=range.x, ylim=range.y, type="n",
-         xlab=xlab, ylab=ylab, main=main, axes=axes., bty=bty., ...)
+    plot(0, 0, xlim=range.x, ylim=range.y, type="n", xaxt="n", yaxt="n",
+         xlab=xlab, ylab=ylab, main=main, bty=bty., ...)
+    x.seq <- seq(min(rxs, rxo), max(rxs, rxo), length = 5)
+    axis(1, x.seq, round(x.seq, 2))
+    y.seq <- seq(min(rys, ryo), max(rys, ryo), length = 5)
+    axis(2, y.seq, round(y.seq, 2))
     pol.centre <- matrix(0, ncol=2, nrow=nrow(res.original.ord))
     pol.inside <- NULL
     if(add.polygon) ppoly <- T else ppoly <- F
@@ -77,8 +81,11 @@ function(x, kernel, superpose.points, chp, add.dplots,
       pol.centre[i,] <- chpoly$pol.centre
       pol.inside[i] <- chpoly$pol.inside
     }
-    point.colours <- ifelse(pol.inside, 1, 2)
-    points(res.original.ord, pch=pch, cex=cex, col=point.colours, ...)
+    if(missing(point.col)) point.col <- c(1,2)
+    if(missing(point.pch)) point.pch <- c(16,16)
+    point.colours <- ifelse(pol.inside, point.col[1], point.col[2])
+    point.pchs <- ifelse(pol.inside, point.pch[1], point.pch[2])
+    points(res.original.ord, pch=point.pchs, cex=cex, col=point.colours, ...)
     points(pol.centre, pch=1, cex=cex, col=point.colours, ...)
     arrows(pol.centre[,1], pol.centre[,2], 
            as.numeric(res.original.ord[,1]), as.numeric(res.original.ord[,2]),
@@ -126,10 +133,8 @@ function(x, kernel, superpose.points, chp, add.dplots,
       dxy <- data.frame(res1, res2)
       pol <- dxy[chp.xy,]
       pol.area <- polygon.area(pol)$area
-      if(reduce.polygon) {
-        k <- get.k(pol, conf)
-        pol <- get.newpolygon(k, pol)
-      } else {
+      
+      if(reduce.polygon == "peel") {
         dif <- 1
         while(dif > conf) {
           dxy <- dxy[-chp.xy,]
@@ -138,7 +143,10 @@ function(x, kernel, superpose.points, chp, add.dplots,
           pol.area2 <- polygon.area(pol)$area
           dif <- pol.area2/pol.area
         }
+      } else {
+        pol <- get.newpolygon(conf, pol, method = reduce.polygon)
       }
+      
       plot(res1, res2, xlim=range.x, ylim=range.y, type="n",
            xlab=xlab, ylab=ylab, main=main, axes=axes., bty=bty., ...)
       col.polygon <- "lightgray"

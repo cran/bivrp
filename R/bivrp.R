@@ -1,8 +1,8 @@
 bivrp <-
 function(obj, sim=99, conf=.95, diagfun, simfun, fitfun, verb=F,
-                  add.dplots=T, theta.sort=T, add.polygon=F, reduce.polygon=T,
+                  add.dplots=T, theta.sort=T, add.polygon=F, reduce.polygon="proportional",
                   kernel=F, chp=F, superpose.points=F, one.dim=F,
-                  xlab, ylab, main, clear.device=F, ...) {
+                  xlab, ylab, main, clear.device=F, point.col, point.pch, ...) {
 
   res.original <- diagfun(obj)
   res.original1 <- res.original[[1]]
@@ -35,7 +35,7 @@ function(obj, sim=99, conf=.95, diagfun, simfun, fitfun, verb=F,
               "chp"=chp, "add.dplots"=add.dplots, "reduce.polygon"=reduce.polygon)
   class(ret) <- "bivrp"
   plot.bivrp(ret, kernel=kernel, one.dim=one.dim, chp=chp, add.dplots=add.dplots, theta.sort=theta.sort, reduce.polygon=reduce.polygon,
-             superpose.points=superpose.points, xlab=xlab, ylab=ylab, main=main, ...)
+             superpose.points=superpose.points, xlab=xlab, ylab=ylab, main=main, point.col=point.col, point.pch=point.pch, ...)
   if(clear.device) dev.off()
   return(invisible(ret))
 }

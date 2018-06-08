@@ -2,8 +2,8 @@ add.dplots.plot <-
   function(range.x, range.y, xlab., ylab.,
            d1, d2, cc1, c2, startd1, startd2,
            res1, res2, res.original1, res.original2, d1.or, d2.or) {
-    axis(1, round(seq(range.x[1], range.x[2]/1.7, length=5), 1))
-    axis(2, round(seq(range.y[1], range.y[2]/1.7, length=5), 1))
+    #axis(1, round(seq(range.x[1], range.x[2]/1.7, length=5), 1))
+    #axis(2, round(seq(range.y[1], range.y[2]/1.7, length=5), 1))
     
     mtext(side=1, text=xlab., line=3, adj=.375)
     mtext(side=2, text=ylab., line=3, adj=.375)
@@ -72,10 +72,8 @@ chp.perpoint <-
     dxy <- data.frame(res1, res2)
     pol <- dxy[chp.xy,]
     pol.area <- polygon.area(pol)$area
-    if(reduce.polygon) {
-      k <- get.k(pol, conf)
-      pol <- get.newpolygon(k, pol)
-    } else {
+    
+    if(reduce.polygon == "peel") {
       dif <- 1
       while(dif > conf) {
         dxy <- dxy[-chp.xy,]
@@ -84,7 +82,10 @@ chp.perpoint <-
         pol.area2 <- polygon.area(pol)$area
         dif <- pol.area2/pol.area
       }
+    } else {
+      pol <- get.newpolygon(conf, pol, method = reduce.polygon)
     }
+    
     pol.centre <- polygon.area(pol)$centre
     if(missing(col.polygon)) col.polygon <- "#C0C0C055"
     if(ppoly) polygon(pol, col=col.polygon, border="#00000055", lty=1)
