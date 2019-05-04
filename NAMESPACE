@@ -1,12 +1,13 @@
-importFrom(MASS, kde2d)
+importFrom(MASS, kde2d, width.SJ)
 import(methods)
 
-importFrom("grDevices", "chull", "contourLines", "dev.off")
-importFrom("graphics", "arrows", "axis", "mtext", "par", "plot",
-           "points", "polygon")
-importFrom("stats", "approx", "density", "dist")
+importFrom(mrfDepth, compBagplot)
 
-export(bivrp, plot.bivrp, add.dplots.plot, add.dplots.prep, chp.perpoint, get.k, get.newpolygon,
-       is.point.inside, polygon.area, sorttheta)
+importFrom(grDevices, chull, contourLines, dev.off)
+importFrom(graphics, arrows, axis, mtext, par, plot, points, polygon)
+importFrom(stats, approx, density, dist)
+
+export(bivrp, plot.bivrp, print.bivrp, is_point_inside, polygon_area, get_newpolygon, get_reduced_bag)
 
 S3method(plot, bivrp)
+S3method(print, bivrp)

@@ -1,9 +1,9 @@
 bivrp <-
-function(obj, sim=99, conf=.95, diagfun, simfun, fitfun, verb=F,
-                  add.dplots=T, theta.sort=T, add.polygon=F, reduce.polygon="proportional",
-                  kernel=F, chp=F, superpose.points=F, one.dim=F,
-                  xlab, ylab, main, clear.device=F, point.col, point.pch, ...) {
-
+function(obj, sim = 99, conf = .95, diagfun, simfun, fitfun, verb = FALSE,
+         sort.res = TRUE, closest.angle = TRUE, angle.ref = - pi,
+         counter.clockwise = TRUE, xlab, ylab, main,
+         clear.device = FALSE, point.col, point.pch, ...) {
+  
   res.original <- diagfun(obj)
   res.original1 <- res.original[[1]]
   res.original2 <- res.original[[2]]
@@ -18,7 +18,7 @@ function(obj, sim=99, conf=.95, diagfun, simfun, fitfun, verb=F,
   }
   
   res.original.2 <- data.frame(res.original1, res.original2)
-  res.original.ord <- sorttheta(res.original.2)
+  
   nres <- length(res.original1)
   res1mat <- matrix(res1, byrow=F, nrow=nres)
   res2mat <- matrix(res2, byrow=F, nrow=nres)
@@ -26,16 +26,35 @@ function(obj, sim=99, conf=.95, diagfun, simfun, fitfun, verb=F,
   for(i in 1:sim) {
     reslist[[i]] <- data.frame("res1"=res1mat[,i], "res2"=res2mat[,i]) 
   }
-  reslist.ord <- lapply(reslist, sorttheta)
-
+  
+  if(sort.res) {
+    if(closest.angle) {
+      res.original.ord <- sort_theta(res.original.2, reference = angle.ref,
+                                     counter.clockwise = counter.clockwise)
+      ref <- atan2(res.original.ord[1,2], res.original.ord[1,1])
+    } else {
+      res.original.ord <- sort_theta(res.original.2, reference = angle.ref,
+                                     counter.clockwise = counter.clockwise)
+      ref <- angle.ref
+    }
+    reslist.ord <- lapply(reslist, sort_theta, reference = ref,
+                          counter.clockwise = counter.clockwise)
+  } else {
+    reslist.ord <- lapply(reslist, function(obj) data.frame(x = obj[,1], y = obj[,2]))
+    res.original.ord <- res.original.2
+  }
+  
   ret <- list("reslist.ord"=reslist.ord, "res.original.ord"=res.original.ord,
-              "res1"=res1, "res2"=res2, "add.polygon"=add.polygon,
-              "res.original1"=res.original1, "res.original2"=res.original2, "theta.sort"=theta.sort,
-              "conf"=conf, "superpose.points"=superpose.points, "kernel"=kernel, "one.dim"=one.dim, 
-              "chp"=chp, "add.dplots"=add.dplots, "reduce.polygon"=reduce.polygon)
+              "res1"=res1, "res2"=res2,
+              "res.original1"=res.original1, "res.original2"=res.original2,
+              "conf"=conf)
   class(ret) <- "bivrp"
-  plot.bivrp(ret, kernel=kernel, one.dim=one.dim, chp=chp, add.dplots=add.dplots, theta.sort=theta.sort, reduce.polygon=reduce.polygon,
-             superpose.points=superpose.points, xlab=xlab, ylab=ylab, main=main, point.col=point.col, point.pch=point.pch, ...)
+  plot.bivrp(ret, xlab = xlab, ylab = ylab, main = main,
+             point.col = point.col, point.pch = point.pch, ...)
   if(clear.device) dev.off()
   return(invisible(ret))
+}
+
+print.bivrp <- function(x, ...) {
+  do.call(data.frame, x$reslist.ord)
 }

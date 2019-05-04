@@ -1,16 +1,19 @@
 \name{bivrp}
 \alias{bivrp}
+\alias{print.bivrp}
 \encoding{UTF-8}
 
 \title{Bivariate Residual Plots with Simulation Polygons}
 \description{
-description
+Produces a bivariate residual plot with simulation polygons to assess goodness-of-fit of bivariate statistical models, provided the user supplies three functions: one to obtain model diagnostics, one to simulate data from a fitted model object, and one to refit the model to simulated data.
 }
 \usage{
-bivrp(obj, sim = 99, conf = 0.95, diagfun, simfun, fitfun, 
-      verb = F, add.dplots = T, theta.sort = T, add.polygon = F, 
-      reduce.polygon = "proportional", kernel = F, chp = F, superpose.points = F, 
-      one.dim = F, xlab, ylab, main, clear.device = F, point.col, point.pch, ...)
+bivrp(obj, sim = 99, conf = .95, diagfun, simfun, fitfun, verb = FALSE,
+      sort.res = TRUE, closest.angle = TRUE, angle.ref = - pi,
+      counter.clockwise = TRUE, xlab, ylab, main,
+      clear.device = FALSE, point.col, point.pch, ...)
+      
+\method{print}{bivrp}(x, ...)
 }
 
 \arguments{
@@ -21,26 +24,29 @@ bivrp(obj, sim = 99, conf = 0.95, diagfun, simfun, fitfun,
   \item{simfun}{user-defined function used to simulate a random sample from the model estimated parameters}
   \item{fitfun}{user-defined function used to re-fit the model to simulated data}
   \item{verb}{logical. If \code{TRUE}, prints each step of the simulation procedure}
-  \item{add.dplots}{logical. If \code{TRUE}, adds the marginal density plots}
-  \item{theta.sort}{logical. If \code{TRUE}, produces a simulated polygon for each point}
-  \item{add.polygon}{logical. If \code{TRUE}, plots the simulated polygons as well}
-  \item{reduce.polygon}{method used to reduce the polygon area. Defaults to \code{proportional}, see \code{\link{get.newpolygon}} for details. If \code{reduce.polygon = "peel"}, performs convex hull peeling to reduce the area}
-  \item{kernel}{logical. If TRUE, instead of using polygons for each point, computes 2d kernels and plots the contours}
-  \item{chp}{logical. If \code{TRUE}, instead of using polygons for each point, performs convex hull peeling over all simulated points}
-  \item{superpose.points}{only used if \code{kernel} or \code{chp} is TRUE. Logical argument, if \code{TRUE}, plots all simulated bivariate diagnostics}
-  \item{one.dim}{logical. If \code{TRUE}, plots only the marginal density plots (only works with \code{theta.sort = FALSE})}
+  \item{sort.res}{logical. If \code{TRUE}, points will be sorted using angles formed with the origin (type of ordering can be fine-tuned with arguments \code{closest.angle}, \code{angle.ref} and \code{counter.clockwise}).}
+  \item{closest.angle}{logical. If \code{FALSE}, points will be sorted starting from the angle defined in \code{angle.ref}, if \code{TRUE}, points will be sorted starting from the closest angle to the observed bivariate sample ranked as first}
+  \item{angle.ref}{the reference angle from which points will be sorted starting from the closest angle to the input (in radians). Defaults to \code{- pi}}
+  \item{counter.clockwise}{logical. Should the points be ordered counter-clockwise or clockwise from the reference angle?}
   \item{xlab}{argument passed to \code{par}}
   \item{ylab}{argument passed to \code{par}}
   \item{main}{argument passed to \code{par}}
   \item{clear.device}{logical. If \code{TRUE}, clears the plotting device after producing the bivariate residual plot with simulation polygons}
   \item{point.col}{a vector of length 2 with the colors of the points that are inside and outside of the simulated polygons}
   \item{point.pch}{a vector of length 2 with the point characters of the points that are inside and outside of the simulated polygons}
-  \item{\dots}{further arguments passed to \code{par}}
+  \item{\dots}{further arguments passed to \code{\link{plot.bivrp}}}
+  \item{x}{an object of class \code{bivrp}}
 }
 \details{
-This approach relies on the same strategy used for producing half-normal plots with simulation envelopes. Given a vector of bivariate model diagnostics, the angle each point makes with the origin is calculated to order them. Then, by default 99 bivariate response variables are simulated from the fitted model, using the same model matrices, error distribution and fitted parameters. The model is refitted to each simulated sample, obtaining the same type of model diagnostics, again ordered by the angle they form with the origin. We have, for each bivariate diagnostic, 99 simulated bivariate diagnostics forming the whole cloud of simulated diagnostics.  By default, we then obtain the convex hulls of each set of the $s$ sets of points and obtain a reduced polygon whose area is 95\% of the original convex hull's area, forming the simulated polygon. The points are then connected to the centroids of their respective simulated polygons and, if they lie outside the polygons, they are drawn in red. For the final display, the polygons are erased so as to ease visualization.
+This approach relies on the same strategy used for producing half-normal plots with simulation envelopes. Given a vector of bivariate model diagnostics, the angle each point makes with the origin is calculated to order them. This can be fine-tuned using the logical arguments \code{closest.angle}, \code{angle.ref}, and \code{counter.clockwise}, see the Arguments section above.
+
+Then, \code{sim} bivariate response variables are simulated from the fitted model, using the same model matrices, error distribution and fitted parameters, using the function defined as \code{simfun}. The model is refitted to each simulated sample, using the function defined as \code{fitfun}. Next, we obtain the same type of model diagnostics, using \code{diagfun}, again ordered the same way the original bivariate sample was. We have, for each bivariate diagnostic, \code{sim} simulated bivariate diagnostics forming the whole cloud of simulated diagnostics.
+
+By default, we then obtain the convex hulls of each set of the $s$ sets of points and obtain a reduced polygon whose area is (\code{conf * 100})\% of the original convex hull's area, forming the simulated polygon. This is equivalent to passing the argument \code{reduce.polygon = "proportional"} to \code{\link{plot.bivrp}}. The argument \code{reduce.polygon = "bag"} can be used to obtain a (\code{conf * 100})\% bagplot as the simulated polygon instead of a convex hull. The points are then connected to the centroids of their respective simulated polygons and, if they lie outside the polygons, they are drawn in red. For the final display, the polygons are erased so as to ease visualization.
 
 There is no automatic implementation of a bivariate model in this function, and hence users must provide three functions for \code{bivrp}. The first function, \code{diagfun}, must extract the desired model diagnostics from a model fit object. The second function, \code{simfun}, must return the response variable, simulated using the same error distributions and estimated parameters from the fitted model. The third and final function, \code{fitfun}, must return a fitted model object. See the Examples section.
+
+This function produces a plot by passing the computed object to \code{\link{plot.bivrp}}. The \code{print} method returns a \code{data.frame} containing all ordered simulated bivariate diagnostics. 
 }
 \value{
 The function returns an object of class "bivrp", which is a list containing the following components:
@@ -49,21 +55,17 @@ The function returns an object of class "bivrp", which is a list containing the 
 \item{res.original.ord }{original model diagnostics}
 \item{res1 }{diagnostics from variable 1}
 \item{res2 }{diagnostics from variable 2}
-\item{add.polygon }{logical. Equals TRUE if \code{add.polygon=TRUE} in the bivrp call}
 \item{res.original1 }{original model diagnostics for variable 1}
 \item{res.original2 }{original model diagnostics for variable 2}
-\item{theta.sort }{logical. Equals TRUE if \code{theta.sort=TRUE} in the bivrp call}
 \item{conf }{confidence level of the simulated polygons}
-\item{superpose.points }{logical. Equals TRUE if \code{superpose.points=TRUE} in the bivrp call}
-\item{kernel }{logical. Equals TRUE if \code{kernel=TRUE} in the bivrp call}
-\item{one.dim }{logical. Equals TRUE if \code{one.dim=TRUE} in the bivrp call}
-\item{chp }{logical. Equals TRUE if \code{chp=TRUE} in the bivrp call}
-\item{add.dplots }{logical. Equals TRUE if \code{add.dplots=TRUE} in the bivrp call}
-\item{reduce.polygon }{logical. Equals TRUE if \code{reduce.polygon=TRUE} in the bivrp call}
 }
 
 \author{
-Rafael A. Moral <rafael_moral@yahoo.com.br>, John Hinde and Clarice G. B. \enc{Demétrio}{Demetrio}
+Rafael A. Moral <rafael.deandrademoral@mu.ie> and John Hinde
+}
+
+\seealso{
+\code{\link{plot.bivrp}}
 }
 
 \examples{

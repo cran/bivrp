@@ -1,4 +1,4 @@
-is.point.inside <-
+is_point_inside <-
 function(point, polyg) {
   p <- as.numeric(point)
   #library(mgcv)

@@ -1,4 +1,4 @@
-polygon.area <-
+polygon_area <-
 function(P) {
   if(dim(P)[2]!=2) stop("supply data.frame or matrix with two columns")
   x <- P[,1]
@@ -15,10 +15,10 @@ function(P) {
   return(list("area"=abs(area), "centre"=c(centre.x, centre.y)))
 }
 
-get.k <-
+get_k <-
   function(P, conf) {
-    AP <- polygon.area(P)$area
-    C <- polygon.area(P)$centre
+    AP <- polygon_area(P)$area
+    C <- polygon_area(P)$centre
     di <- apply(P, 1, function(x) dist(rbind(x, C)))
     di <- c(di, di[1])
     xtil <- P[,1] - C[1]
@@ -52,22 +52,46 @@ get.k <-
     return(min(K[!is.na(K)]))
   }
 
-get.newpolygon <-
+get_newpolygon <-
   function(conf, P, method = c("proportional", "get.k")) {
-    C <- polygon.area(P)$centre
+    C <- polygon_area(P)$centre
     di <- apply(P, 1, function(x) dist(rbind(x, C)))
     dil <- switch(method, "proportional" = di * sqrt(conf),
-                          "get.k" = di - get.k(P, conf))
+                          "get.k" = di - get_k(P, conf))
     yil <- dil/di*(P[,2] - C[2]) + C[2]
     xil <- dil/di*(P[,1] - C[1]) + C[1]
     newPoly <- data.frame(xil, yil)
     return(newPoly)
   }
 
+get_reduced_bag <- function(x, y, conf) {
+  bag <- compute_bagplot(x, y, conf)
+  bag.ret <- data.frame(bag)
+  colnames(bag.ret) <- c("xil","yil")
+  return(bag.ret)
+}
+
+compute_bagplot <- function(x, y, conf) {
+  obj <- compBagplot(cbind(x, y))
+  Bag <- obj$bag
+  Center <- obj$center
+  centered.bag <- sweep(Bag, MARGIN = 2, Center, FUN = "-")
+  fence <- (4*conf - 1) * centered.bag
+  fence <- sweep(fence, MARGIN = 2, Center, FUN = "+")
+  return(fence)
+}
+
+#x <- rnorm(50)
+#y <- rnorm(50)
+#plot(x,y)
+#polygon(get_reduced_bag(x,y,.95),col="#00FF0050")
+#polygon(get_newpolygon(.95,data.frame(x,y)[chull(x,y),],"proportional"),col="#FF000050")
+#polygon(get_newpolygon(.95,data.frame(x,y)[chull(x,y),],"get.k"),col="#0000FF50")
+
 #pol <- data.frame(x=c(2,1,3,4.5,5), y=c(-10,3,5,4.5,2))
 #np1 <- get.newpolygon(conf = .7, P = pol, method = "get.k")
 #np2 <- get.newpolygon(conf = .7, P = pol, method = "proportional")
-#pC <- polygon.area(pol)$centre
+#pC <- polygon_area(pol)$centre
 #apply(pol, 1, function(x) arrows(x[1], x[2], pC[1], pC[2], length = 0))
 #points(pC[1], pC[2], pch = 16)
 
@@ -75,11 +99,11 @@ get.newpolygon <-
 #polygon(pol)
 #polygon(np1, lty = 2, col = "#00FF0055")
 #polygon(np2, lty = 2, col = "#FF000055")
-#polygon.area(np1)
-#polygon.area(np2)
-#points(polygon.area(pol)$centre[1], polygon.area(pol)$centre[2],
+#polygon_area(np1)
+#polygon_area(np2)
+#points(polygon_area(pol)$centre[1], polygon_area(pol)$centre[2],
 #       pch = 21, bg = 1, cex = 1.5)
-#points(polygon.area(np1)$centre[1], polygon.area(np1)$centre[2],
+#points(polygon_area(np1)$centre[1], polygon_area(np1)$centre[2],
 #       pch = 21, bg = 3)
-#points(polygon.area(np2)$centre[1], polygon.area(np2)$centre[2],
+#points(polygon_area(np2)$centre[1], polygon_area(np2)$centre[2],
 #       pch = 21, bg = 2)

@@ -1,45 +1,59 @@
 \name{polygon-operations}
-\alias{polygon.area}
-\alias{get.k}
-\alias{get.newpolygon}
+\alias{polygon_area}
+\alias{get_k}
+\alias{get_newpolygon}
+\alias{get_reduced_bag}
+\alias{compute_bagplot}
 \encoding{UTF-8}
 \title{Polygon operations}
 \description{Convex polygon operations - determination of area, centre of mass, and area reduction}
 \usage{
-polygon.area(P)
-get.k(P, conf)
-get.newpolygon(conf, P, method)
+polygon_area(P)
+get_k(P, conf)
+get_newpolygon(conf, P, method)
+get_reduced_bag(x, y, conf)
+compute_bagplot(x, y, conf)
 }
 \arguments{
   \item{P}{2-column \code{matrix} or \code{data.frame} with the coordinates of the vertices of the convex polygon}
   \item{conf}{proportion of the area of polygon \code{P}}
-  \item{k}{distance from the centre of mass to the vertices to be reduced so that new polygon has proportion \code{conf} of the area of polygon \code{P}}
-  \item{method}{method used to reduce the area of the polygon. Use \code{method = "proportional"} to scale the distances between the centroid and the vertices by \code{sqrt(conf)}; use \code{method = "get.k"} to subtract the same distance \code{k} from the centroid to each vertex.}
+  \item{method}{method used to reduce the area of the polygon. Use \code{method = "proportional"} to scale the distances between the centroid and the vertices by \code{sqrt(conf)}; use \code{method = "get_k"} to subtract the same distance \code{k} from the centroid to each vertex.}
+  \item{x}{x coordinates (of raw data) used to obtain the reduced bag}
+  \item{y}{y coordinates (of raw data) used to obtain the reduced bag}
+}
+
+\details{
+The function \code{compute_bagplot} uses an adapted version of the code written by P. Segaert to obtain the bagplot, that uses the Fortran subroutine written by P.J. Rousseeuw, I. Ruts and A. Struyf.
 }
 
 \author{
-Rafael A. Moral <rafael_moral@yahoo.com.br>, John Hinde and Clarice G. B. \enc{Demétrio}{Demetrio}
+Rafael A. Moral <rafael.deandrademoral@mu.ie> and John Hinde
+}
+
+\references{
+Rousseeuw P.J., Ruts I., Tukey J.W. (1999). The bagplot: A bivariate boxplot. The American Statistician, 53, 382–387.
 }
 
 \seealso{
-\code{\link{is.point.inside}}
+\code{\link{is_point_inside}}
 \code{\link{polygon}}
 }
+
 \examples{
   oldPolygon <- data.frame(x=c(2,1,3,4.5,5), y=c(1,3,5,4.5,2))
   
   # area
-  polygon.area(oldPolygon)$area
+  polygon_area(oldPolygon)$area
   # centre of mass
-  polygon.area(oldPolygon)$centre
+  polygon_area(oldPolygon)$centre
   
   # get a new polygon with 50% of the area of the old one
-  newPolygon <- get.newpolygon(conf=.5, P=oldPolygon, method="proportional")
-  polygon.area(newPolygon)$area/polygon.area(oldPolygon)$area
+  newPolygon <- get_newpolygon(conf=.5, P=oldPolygon, method="proportional")
+  polygon_area(newPolygon)$area/polygon_area(oldPolygon)$area
   
   # second method
-  newPolygon2 <- get.newpolygon(conf=.5, P=oldPolygon, method="get.k")
-  polygon.area(newPolygon2)$area/polygon.area(oldPolygon)$area
+  newPolygon2 <- get_newpolygon(conf=.5, P=oldPolygon, method="get.k")
+  polygon_area(newPolygon2)$area/polygon_area(oldPolygon)$area
   
   # illustration
   plot(oldPolygon, xlim=c(0,6), ylim=c(0,6), main="(a)", pch=16)
@@ -53,7 +67,7 @@ Rafael A. Moral <rafael_moral@yahoo.com.br>, John Hinde and Clarice G. B. \enc{D
              expression(paste(P[3],minute)), expression(paste(P[4],minute)),
              expression(paste(P[5],minute))), pos=c(1,3,2,4,4), col=4, cex=2)
 
-  C <- polygon.area(oldPolygon)$centre
+  C <- polygon_area(oldPolygon)$centre
   text(C[1], C[2], "C", pos=4, cex=2)
   for(i in 1:5) lines(c(C[1], oldPolygon[i,1]), 
                       c(C[2], oldPolygon[i,2]), lty=2, lwd=2, type="b")

@@ -1,11 +1,11 @@
-\name{is.point.inside}
-\alias{is.point.inside}
+\name{is_point_inside}
+\alias{is_point_inside}
 \encoding{UTF-8}
 
 \title{Determine if point is inside or outside a simple polygon area}
 \description{Returns whether a point is inside or outside the convex polygon formed with the coordinates in a data frame or matrix}
 \usage{
-is.point.inside(point, polyg)
+is_point_inside(point, polyg)
 }
 
 \arguments{
@@ -19,14 +19,14 @@ The algorithm used here draws a ray from the point and counts the number of inte
 This function returns \code{TRUE}, if the point is inside and \code{FALSE}, otherwise.
 }
 \author{
-Rafael A. Moral <rafael_moral@yahoo.com.br>, John Hinde and Clarice G. B. \enc{Demétrio}{Demetrio}
+Rafael A. Moral <rafael.deandrademoral@mu.ie> and John Hinde
 }
 
 \examples{
-my.polygon <- data.frame(c(1, 2, 3, 4, 3),
+my_polygon <- data.frame(c(1, 2, 3, 4, 3),
                          c(1, 0, .5, 3, 4))
-points.to.test <- list(c(0, 0), c(2.5, 1), c(3.5, 4))
+points_to_test <- list(c(0, 0), c(2.5, 1), c(3.5, 4))
 
-unlist(lapply(points.to.test, is.point.inside, my.polygon))
+unlist(lapply(points_to_test, is_point_inside, my_polygon))
 
 }
