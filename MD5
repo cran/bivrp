@@ -1,12 +1,11 @@
-ef96cf7f90f879ed090dd7ffeac95087 *DESCRIPTION
-570ed9c3699ce7f644776cf53149d4a7 *NAMESPACE
+eadb8e56f46b37a7cf036d394970a96d *DESCRIPTION
+f906c280e64362879bc8619fb28898eb *NAMESPACE
 3a224ec490feba7df91de1d9f9750291 *R/bivrp-internal.R
-43620cf4d37f1701be60b92af0c031e7 *R/bivrp.R
+82b7728731abbfaa5f08ab180d2f5346 *R/bivrp.R
 d83d8e93a6400830e58bd2900dc9057e *R/is_point_inside.R
 a3a5ae1bdd7b03f911ea6ebffd592fd2 *R/plot.bivrp.R
-47e44eda97613aa1875fbbf3e68fb8b9 *R/polygon-operations.R
-0f09ce51109b74365cf37badb037f397 *build/partial.rdb
-82a09d3579fcf8ba23fc94f51bf1bda6 *man/bivrp-internal.Rd
+89a06c03a55790ed76bc3c813bab3fec *R/polygon-operations.R
+f3b3b7bc2e554fecac18fe68a02a5d93 *build/partial.rdb
 f240cadbc1db523e87dd8409fa98ff97 *man/bivrp-package.Rd
 1684c07138b215ee1561d2a8cb157eee *man/bivrp.Rd
 40b7a3e6b17a3cdff79ff65c2ad333c4 *man/is_point_inside.Rd

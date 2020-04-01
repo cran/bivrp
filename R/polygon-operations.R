@@ -72,7 +72,7 @@ get_reduced_bag <- function(x, y, conf) {
 }
 
 compute_bagplot <- function(x, y, conf) {
-  obj <- compBagplot(cbind(x, y))
+  obj <- mrfDepth::compBagplot(cbind(x, y))
   Bag <- obj$bag
   Center <- obj$center
   centered.bag <- sweep(Bag, MARGIN = 2, Center, FUN = "-")

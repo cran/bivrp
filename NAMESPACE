@@ -1,7 +1,7 @@
 importFrom(MASS, kde2d, width.SJ)
 import(methods)
 
-importFrom(mrfDepth, compBagplot)
+#importFrom(mrfDepth, compBagplot)
 
 importFrom(grDevices, chull, contourLines, dev.off)
 importFrom(graphics, arrows, axis, mtext, par, plot, points, polygon)

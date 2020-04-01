@@ -56,5 +56,5 @@ function(obj, sim = 99, conf = .95, diagfun, simfun, fitfun, verb = FALSE,
 }
 
 print.bivrp <- function(x, ...) {
-  do.call(data.frame, x$reslist.ord)
+  print(as.data.frame(x$reslist.ord))
 }
